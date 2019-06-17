@@ -1,0 +1,73 @@
+---
+################################################################################
+# Set Hostname
+################################################################################
+
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+################################################################################
+# Set timezone to UTC
+# http://yellerapp.com/posts/2015-01-12-the-worst-server-setup-you-can-make.html
+################################################################################
+
+- name: Set timezone
+  timezone:
+    name: UTC
+    hwclock: UTC
+
+################################################################################
+# Packages
+################################################################################
+
+- name: Install common packages
+  pacman:
+    name: [
+      'bash-completion',
+      'cronie',
+      'curl',
+      'git',
+      'htop',
+      'logrotate',
+      'mailx',
+      'openbsd-netcat',
+      'postfix',
+      'rsync',
+      'screen',
+      'sudo',
+      'tree',
+      'unzip',
+      'vim',
+      'wget'
+    ]
+    update_cache: "yes"
+
+################################################################################
+# Files
+################################################################################
+
+- name: Copy common files
+  copy:
+    src: files/
+    dest: /
+  notify: reload sysctl
+
+- name: Check /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127.0.0.1'
+    line: '127.0.0.1 {{ inventory_hostname }} localhost.localdomain localhost'
+
+################################################################################
+# Services
+################################################################################
+
+- name: Enable and start services
+  systemd:
+    name: '{{ item }}'
+    state: started
+    enabled: "yes"
+  with_items:
+    - cronie
+    - postfix

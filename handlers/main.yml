@@ -1,0 +1,14 @@
+---
+
+  - name: reload sysctl
+    command: sysctl -p "{{ item }}"
+    with_items:
+      - /etc/sysctl.d/99-disable-ipv6.conf
+      - /etc/sysctl.d/99-hardening.conf
+      - /etc/sysctl.d/99-swappiness.conf
+
+  - name: restart ssh
+    systemd:
+      name: sshd
+      state: restarted
+
